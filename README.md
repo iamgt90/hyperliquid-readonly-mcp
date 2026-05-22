@@ -1,6 +1,6 @@
 # Hyperliquid Readonly MCP
 
-Hyperliquid Readonly MCP is a read-only Model Context Protocol (MCP) server for Hyperliquid perpetual markets.
+Hyperliquid Readonly MCP is a Read-only by design Model Context Protocol (MCP) server for Hyperliquid perpetual markets.
 
 It allows Claude and other MCP-compatible AI clients to inspect:
 
