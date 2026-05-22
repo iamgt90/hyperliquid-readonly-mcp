@@ -14,30 +14,17 @@ It allows Claude and other MCP-compatible AI clients to inspect:
 - market context
 - volatility conditions
 
-This project is designed for:
-
-- market research
-- discretionary trading workflows
-- risk monitoring
-- AI-assisted market analysis
-- position review
-- funding analysis
+This project is designed for research, monitoring, discretionary trading workflows, and AI-assisted market analysis.
 
 It is not a trading bot.
 
----
-
-# Warning
+## Warning
 
 Not affiliated with Hyperliquid, Anthropic, Claude, or any exchange operator.
 
 This project uses Hyperliquid public API endpoints only.
 
-Review the Disclaimer section before use.
-
----
-
-# Important
+## Important
 
 This MCP server is intentionally read-only.
 
@@ -52,27 +39,10 @@ It cannot:
 - access seed phrases
 - move funds
 - change leverage
-- interact with wallets directly
 
 Only public wallet addresses are used.
 
----
-
-# Note
-
-All requests are made against public Hyperliquid API endpoints.
-
-No browser automation is used.
-
-No wallet connection is required.
-
-No private key is required.
-
-No API key is required.
-
----
-
-# Features
+## Features
 
 | Feature | Description |
 |---|---|
@@ -84,72 +54,43 @@ No API key is required.
 | hl_get_open_orders | Read public open orders |
 | hl_analyze_position_context | Combined risk and market snapshot |
 
----
+## Quick Start
 
-# One-Shot Claude Setup
+Clone the repository:
 
-Paste this into Claude Code:
+bash id="6p0rdb" git clone https://github.com/YOUR_USERNAME/hyperliquid-readonly-mcp.git cd hyperliquid-readonly-mcp 
 
-text Set up Hyperliquid Readonly MCP for me.  Clone the repository.  Run: - npm install - npm run build  Then register the MCP server using:  claude mcp add hyperliquid-readonly -- node /FULL/PATH/TO/hyperliquid-readonly-mcp/dist/server.js  Finally restart Claude Code and verify using: Use hl_health_check 
+Install dependencies:
 
----
+bash id="uvx2zw" npm install 
 
-# Prerequisites
+Build the project:
 
-- Node.js 18+
-- Claude Code or another MCP-compatible client
-- Internet connection
-- Public Hyperliquid wallet address (optional)
+bash id="4g4c0x" npm run build 
 
----
+Register the MCP server:
 
-# Full Setup Walkthrough
+bash id="az6u5f" claude mcp add hyperliquid-readonly -- node /Users/YOUR_MAC_USERNAME/hyperliquid-readonly-mcp/dist/server.js 
 
-## 1. Clone the repository
+Verify registration:
 
-bash git clone https://github.com/YOUR_USERNAME/hyperliquid-readonly-mcp.git cd hyperliquid-readonly-mcp 
-
----
-
-## 2. Install dependencies
-
-bash npm install 
-
----
-
-## 3. Build the MCP server
-
-bash npm run build 
-
----
-
-## 4. Register the MCP server
-
-Example:
-
-bash claude mcp add hyperliquid-readonly -- node /Users/YOUR_MAC_USERNAME/hyperliquid-readonly-mcp/dist/server.js 
-
----
-
-## 5. Verify registration
-
-bash claude mcp list 
+bash id="l83ddk" claude mcp list 
 
 Expected output:
 
-text hyperliquid-readonly ... Connected 
+text id="r5gw0u" hyperliquid-readonly ... Connected 
 
----
+Restart Claude Code and ask:
 
-## 6. Restart Claude Code
+text id="fgj3tm" Use hl_health_check 
 
-After restarting Claude Code, ask:
+## One-Shot Claude Setup
 
-text Use hl_health_check 
+Paste this into Claude Code:
 
----
+text id="tq20y4" Set up Hyperliquid Readonly MCP for me.  Clone the repository.  Run: - npm install - npm run build  Then register the MCP server using:  claude mcp add hyperliquid-readonly -- node /FULL/PATH/TO/hyperliquid-readonly-mcp/dist/server.js  Finally restart Claude Code and verify using: Use hl_health_check 
 
-# How to Connect a Wallet
+## Wallet Usage
 
 This MCP never connects to wallets directly.
 
@@ -157,7 +98,7 @@ It only reads public wallet state using a public wallet address.
 
 Example wallet format:
 
-text 0x0000000000000000000000000000000000000000 
+text id="nl4ngf" 0x0000000000000000000000000000000000000000 
 
 Never enter:
 
@@ -165,213 +106,117 @@ Never enter:
 - seed phrases
 - API private keys
 
----
+### Read wallet positions
 
-## Example Wallet Usage
+text id="dvsr6h" Use hl_get_position_summary with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS. 
 
-text Use hl_get_position_summary with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS. 
+### Read open orders
 
----
+text id="m26g9q" Use hl_get_open_orders with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS. 
 
-# How to Read Open Orders
+## Market Usage
 
-text Use hl_get_open_orders with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS. 
+### Read market price
 
-Claude will inspect:
+text id="0p4p7t" Use hl_get_market_price with coin BTC. 
 
-- limit orders
-- trigger orders
-- currently open orders
+### Read funding and market context
 
-using public exchange state only.
+text id="3zpk2z" Use hl_get_asset_context with coin BTC. 
 
----
+### Search markets
 
-# How to Change Coin / Ticker
+text id="n9u3cb" Use hl_search_markets with query BTC. 
 
-Use the coin parameter.
-
-Examples:
-
-text Use hl_get_market_price with coin BTC. 
-
-text Use hl_get_market_price with coin ETH. 
-
-text Use hl_get_market_price with coin SOL. 
-
----
-
-# How to Use External DEX Markets
+## External DEX Markets
 
 Some markets exist under external DEX namespaces.
 
 Use either split format:
 
-text Use hl_get_market_price with coin COIN and dex DEX_NAME. 
+text id="s4trgw" Use hl_get_market_price with coin COIN and dex DEX_NAME. 
 
 or prefixed format:
 
-text Use hl_get_market_price with coin DEX_NAME:COIN. 
+text id="85sow6" Use hl_get_market_price with coin DEX_NAME:COIN. 
 
-Example:
+## Example Claude Workflows
 
-text Use hl_get_asset_context with coin COIN and dex DEX_NAME. 
+### Position Risk Analysis
 
----
+text id="20h5v9" Analyze my current exposure using wallet 0xYOUR_PUBLIC_WALLET_ADDRESS.  Focus on: - leverage - liquidation distance - unrealized pnl - margin usage - funding pressure - directional exposure - volatility risk  Do not suggest execution. 
 
-# How to Search Markets
+### Market Structure Analysis
 
-If you do not know the exact ticker:
+text id="1ln1mu" Analyze current market conditions for BTC.  Focus on: - funding - open interest - volatility - directional bias - premium - liquidity conditions  Do not suggest execution. 
 
-text Use hl_search_markets with query COIN. 
+### Compare Multiple Markets
 
-Example:
+text id="9yrtca" Compare BTC, ETH, and SOL perpetual conditions.  Focus on: - funding divergence - open interest - relative strength - volatility - liquidity 
 
-text Use hl_search_markets with query BTC. 
+## Example Output
 
-For a specific DEX:
+text id="e9zv6o" BTC | POSITION: Long | LEVERAGE: 5x isolated  Mark price: 000.00 Entry price: 000.00 Liquidation price: 000.00 Unrealized PnL: +0.00 Funding: mildly positive Open interest: expanding 24h volume: moderate  Risk summary: The position remains exposed to short-term volatility spikes. 
 
-text Use hl_search_markets with query COIN and dex DEX_NAME. 
+## Tool Reference
 
----
+### Health
 
-# Example Claude Workflows
-
-## Market Analysis
-
-text Analyze current market conditions for BTC.  Focus on: - funding - open interest - volatility - directional bias - premium - liquidity conditions  Do not suggest execution. 
-
----
-
-## Position Risk Analysis
-
-text Analyze my current exposure using wallet 0xYOUR_PUBLIC_WALLET_ADDRESS.  Focus on: - leverage - liquidation distance - unrealized pnl - margin usage - funding pressure - directional exposure - volatility risk  Do not suggest execution. 
-
----
-
-## Compare Multiple Markets
-
-text Compare BTC, ETH, and SOL perpetual conditions.  Focus on: - funding divergence - open interest - relative strength - volatility - liquidity 
-
----
-
-## Open Interest + Funding Workflow
-
-text Analyze current perp positioning for BTC.  Focus on: - funding rate - open interest expansion - crowded positioning - directional imbalance - volatility risk  Do not suggest trades. 
-
----
-
-## Full Position Context
-
-text Use hl_analyze_position_context with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS, coin COIN, and dex DEX_NAME. 
-
-This combines:
-
-- current position
-- market price
-- funding
-- open interest
-- unrealized pnl
-- liquidation distance
-- leverage
-- volume
-- market context
-
----
-
-# Example Output
-
-text COIN | POSITION: Long | LEVERAGE: 5x isolated  Mark price: 000.00 Entry price: 000.00 Liquidation price: 000.00 Unrealized PnL: +0.00 Funding: mildly positive Open interest: expanding 24h volume: moderate  Risk summary: The position remains exposed to short-term volatility spikes. Funding pressure is currently limited, while liquidation distance remains acceptable for active monitoring. 
-
----
-
-# How Claude Knows Which Tool to Use
-
-| You say... | Claude should use... |
-|---|---|
-| “Check if Hyperliquid is connected” | hl_health_check |
-| “What is the price of BTC?” | hl_get_market_price |
-| “Find this market” | hl_search_markets |
-| “Show funding and OI” | hl_get_asset_context |
-| “Read my wallet position” | hl_get_position_summary |
-| “Show my open orders” | hl_get_open_orders |
-| “Analyze my position risk” | hl_analyze_position_context |
-
----
-
-# Tool Reference
-
-## Health
-
-| Tool | What it does |
+| Tool | Description |
 |---|---|
 | hl_health_check | Confirms API connectivity |
 
----
+### Market Data
 
-## Market Data
-
-| Tool | What it does |
+| Tool | Description |
 |---|---|
-| hl_get_market_price | Reads current market price |
-| hl_search_markets | Searches available markets |
-| hl_get_asset_context | Reads funding, OI, premium, volume, impact prices |
+| hl_get_market_price | Read current market price |
+| hl_search_markets | Search available markets |
+| hl_get_asset_context | Funding, OI, premium, volume, impact prices |
 
----
+### Wallet Data
 
-## Wallet / Position Data
-
-| Tool | What it does |
+| Tool | Description |
 |---|---|
-| hl_get_position_summary | Reads public wallet position state |
-| hl_get_open_orders | Reads public open orders |
-| hl_analyze_position_context | Combines wallet and market data into a risk snapshot |
+| hl_get_position_summary | Read public wallet position state |
+| hl_get_open_orders | Read public open orders |
+| hl_analyze_position_context | Combined wallet + market risk analysis |
 
----
+## Architecture
 
-# Architecture
-
-text Claude Code    ↓ MCP Server over stdio    ↓ Hyperliquid public API    ↓ Market data and public wallet state 
+text id="1q0vc6" Claude Code    ↓ MCP Server over stdio    ↓ Hyperliquid public API    ↓ Market data and public wallet state 
 
 No private key layer exists.
 
 No execution layer exists.
 
-No browser control exists.
+No browser automation exists.
 
----
-
-# Read-Only Security Model
+## Read-Only Security Model
 
 This project intentionally excludes:
 
 - order placement
 - order cancellation
-- position closing
 - leverage changes
 - wallet signing
 - private key handling
-- browser automation
 - automated execution
 
 If execution tooling is ever added, it should exist in a separate repository with separate permissions and review processes.
 
----
-
-# Troubleshooting
+## Troubleshooting
 
 | Problem | Solution |
 |---|---|
 | MCP server not visible | Run claude mcp list |
 | Build fails | Run npm install again |
 | Coin not found | Use hl_search_markets |
-| Wallet shows empty positions | Wallet may not have active Hyperliquid positions |
+| Wallet shows empty positions | Wallet may not have active positions |
 | Claude cannot call tools | Restart Claude Code |
-| DEX market missing | Use the dex parameter or prefixed form |
+| DEX market missing | Use the dex parameter |
 
----
-
-# Roadmap
+## Roadmap
 
 Possible future features:
 
@@ -381,14 +226,10 @@ Possible future features:
 - liquidation distance alerts
 - market scanner mode
 - JSON export
-- position journaling
 - CLI wrapper
-- risk dashboard
-- read-only web UI
+- read-only dashboard
 
----
-
-# Disclaimer
+## Disclaimer
 
 This project is provided for educational, research, and informational purposes only.
 
@@ -396,16 +237,8 @@ It does not provide financial advice.
 
 It does not execute trades.
 
-It does not manage funds.
-
-It does not guarantee profitability.
-
-It does not reduce trading risk.
-
 Users are solely responsible for:
-
 - risk management
-- exchange compliance
 - legal compliance
 - tax obligations
 - operational security
@@ -413,8 +246,6 @@ Users are solely responsible for:
 
 Use at your own risk.
 
----
-
-# License
+## License
 
 MIT License.
