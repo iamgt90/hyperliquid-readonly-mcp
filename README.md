@@ -1,6 +1,8 @@
-# Hyperliquid Readonly MCP
+# Hyperliquid MCP
 
-Hyperliquid Readonly MCP is a read-only Model Context Protocol (MCP) server for Hyperliquid perpetual markets.
+Read-only by design.
+
+Hyperliquid MCP is a Model Context Protocol (MCP) server for Hyperliquid perpetual market analysis.
 
 It allows Claude and other MCP-compatible AI clients to inspect:
 
@@ -17,6 +19,18 @@ It allows Claude and other MCP-compatible AI clients to inspect:
 This project is designed for research, monitoring, discretionary trading workflows, and AI-assisted market analysis.
 
 It is not a trading bot.
+
+---
+
+## Features
+
+- Real-time perpetual market analysis
+- Public wallet risk inspection
+- Funding and open interest monitoring
+- Liquidation distance analysis
+- Risk-level classification
+- Claude Code MCP integration
+- Read-only architecture
 
 ---
 
@@ -48,7 +62,7 @@ Only public wallet addresses are used.
 
 ---
 
-## Features
+## Features Overview
 
 | Feature | Description |
 |---|---|
@@ -58,38 +72,38 @@ Only public wallet addresses are used.
 | `hl_get_asset_context` | Funding, OI, premium, volume, impact prices |
 | `hl_get_position_summary` | Read public wallet perpetual positions |
 | `hl_get_open_orders` | Read public open orders |
-| `hl_analyze_position_context` | Combined risk and market snapshot |
+| `hl_analyze_position_context` | Full position risk snapshot with leverage, liquidation buffer, annualized funding, risk flags, and summary |
 
 ---
 
 ## Quick Start
 
-Clone the repository:
+### Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/hyperliquid-readonly-mcp.git
+git clone https://github.com/iamgt90/hyperliquid-readonly-mcp.git
 cd hyperliquid-readonly-mcp
 ```
 
-Install dependencies:
+### Install Dependencies
 
 ```bash
 npm install
 ```
 
-Build the project:
+### Build the Project
 
 ```bash
 npm run build
 ```
 
-Register the MCP server:
+### Register the MCP Server
 
 ```bash
 claude mcp add hyperliquid-readonly -- node /Users/YOUR_MAC_USERNAME/hyperliquid-readonly-mcp/dist/server.js
 ```
 
-Verify registration:
+### Verify Registration
 
 ```bash
 claude mcp list
@@ -114,7 +128,7 @@ Use hl_health_check
 Paste this into Claude Code:
 
 ```text
-Set up Hyperliquid Readonly MCP for me.
+Set up Hyperliquid MCP for me.
 
 Clone the repository.
 
@@ -150,13 +164,13 @@ Never enter:
 - seed phrases
 - API private keys
 
-### Read wallet positions
+### Read Wallet Positions
 
 ```text
 Use hl_get_position_summary with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS.
 ```
 
-### Read open orders
+### Read Open Orders
 
 ```text
 Use hl_get_open_orders with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS.
@@ -166,19 +180,19 @@ Use hl_get_open_orders with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS.
 
 ## Market Usage
 
-### Read market price
+### Read Market Price
 
 ```text
 Use hl_get_market_price with coin BTC.
 ```
 
-### Read funding and market context
+### Read Funding and Market Context
 
 ```text
 Use hl_get_asset_context with coin BTC.
 ```
 
-### Search markets
+### Search Markets
 
 ```text
 Use hl_search_markets with query BTC.
@@ -273,6 +287,24 @@ The position remains exposed to short-term volatility spikes.
 
 ---
 
+## Example Risk Fields
+
+```json
+{
+  "risk_level": "medium",
+  "liq_distance_pct": 14.2,
+  "pnl_on_margin_pct": 22.4,
+  "funding_annualized_estimate": 18.6,
+  "risk_flags": [
+    "high_leverage",
+    "positive_pnl",
+    "funding_cost"
+  ]
+}
+```
+
+---
+
 ## Tool Reference
 
 ### Health
@@ -296,6 +328,49 @@ The position remains exposed to short-term volatility spikes.
 | `hl_get_position_summary` | Read public wallet position state |
 | `hl_get_open_orders` | Read public open orders |
 | `hl_analyze_position_context` | Combined wallet + market risk analysis |
+
+---
+
+## hl_analyze_position_context
+
+This tool aggregates:
+
+- position data
+- leverage
+- liquidation distance
+- unrealized PnL
+- annualized funding
+- open orders
+- market context
+- risk classification
+
+into a single AI-friendly response.
+
+### Returned Risk Fields
+
+| Field | Description |
+|---|---|
+| `risk_level` | low / medium / high / critical |
+| `liquidation_buffer_pct_from_current_price` | Distance from liquidation |
+| `pnl_on_margin_pct` | Unrealized PnL relative to margin |
+| `notional_value` | Position notional value |
+| `funding_annualized_estimate` | Annualized funding estimate |
+| `order_count` | Open order count |
+| `has_open_orders` | Whether open orders exist |
+| `risk_flags` | Machine-readable risk indicators |
+| `summary` | Human-readable risk summary |
+
+### Example Risk Flags
+
+```json
+[
+  "near_liquidation",
+  "high_leverage",
+  "negative_pnl",
+  "funding_cost",
+  "isolated_margin"
+]
+```
 
 ---
 
@@ -344,6 +419,19 @@ If execution tooling is ever added, it should exist in a separate repository wit
 | Wallet shows empty positions | Wallet may not have active positions |
 | Claude cannot call tools | Restart Claude Code |
 | DEX market missing | Use the `dex` parameter |
+
+---
+
+## Security
+
+This repository uses:
+
+- GitHub secret scanning
+- Push protection
+- Dependabot alerts
+- Dependabot security updates
+
+to reduce accidental exposure of secrets and vulnerable dependencies.
 
 ---
 
