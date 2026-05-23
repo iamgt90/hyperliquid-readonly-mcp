@@ -67,12 +67,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "hl_get_market_price",
-      description: "Get current mid price for one Hyperliquid coin. Supports an optional dex (e.g. 'DEX_NAME'). Coin may include the dex prefix (e.g. 'DEX_NAME:COIN') or be bare (e.g. 'COIN'). Read-only.",
+      description: "Get current mid price for one Hyperliquid coin. Supports an optional dex (e.g. 'xyz'). Coin may include the dex prefix (e.g. 'xyz:SPCX') or be bare (e.g. 'SPCX'). Read-only.",
       inputSchema: {
         type: "object",
         properties: {
-          coin: { type: "string", description: "Coin symbol, e.g. BTC, COIN, or DEX_NAME:COIN" },
-          dex: { type: "string", description: "Optional dex name, e.g. DEX_NAME" }
+          coin: { type: "string", description: "Coin symbol, e.g. BTC, SPCX, or xyz:SPCX" },
+          dex: { type: "string", description: "Optional dex name, e.g. xyz" }
         }
       }
     },
@@ -84,7 +84,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["query"],
         properties: {
           query: { type: "string", description: "Case-insensitive substring to search for in market symbols" },
-          dex: { type: "string", description: "Optional dex name to search within, e.g. DEX_NAME" }
+          dex: { type: "string", description: "Optional dex name to search within, e.g. xyz" }
         }
       }
     },
@@ -118,32 +118,32 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["user"],
         properties: {
           user: { type: "string", description: "Public wallet address, 0x..." },
-          dex: { type: "string", description: "Optional dex name, e.g. DEX_NAME" }
+          dex: { type: "string", description: "Optional dex name, e.g. xyz" }
         }
       }
     },
     {
       name: "hl_get_asset_context",
-      description: "Get full asset context for a Hyperliquid coin: mark price, oracle price, funding rate, open interest, 24h notional volume, premium, and impact prices. Supports optional dex (e.g. DEX_NAME) and prefixed symbols (e.g. DEX_NAME:COIN). Read-only.",
+      description: "Get full asset context for a Hyperliquid coin: mark price, oracle price, funding rate, open interest, 24h notional volume, premium, and impact prices. Supports optional dex (e.g. xyz) and prefixed symbols (e.g. xyz:SPCX). Read-only.",
       inputSchema: {
         type: "object",
         required: ["coin"],
         properties: {
-          coin: { type: "string", description: "Coin symbol, e.g. BTC, COIN, or DEX_NAME:COIN" },
-          dex: { type: "string", description: "Optional dex name, e.g. DEX_NAME" }
+          coin: { type: "string", description: "Coin symbol, e.g. BTC, SPCX, or xyz:SPCX" },
+          dex: { type: "string", description: "Optional dex name, e.g. xyz" }
         }
       }
     },
     {
       name: "hl_analyze_position_context",
-      description: "Combines position summary, open orders, market price, and asset context for a single coin into one snapshot. Returns position details plus derived metrics: liquidation distance in dollars and percent, unrealized PnL percent, and margin return percent. Read-only.",
+      description: "Full position risk snapshot for a single coin. Returns position details, market context, and derived metrics: liquidation buffer, PnL on margin, notional value, annualized funding estimate, open order summary, machine-readable risk_flags array, risk_level (low/medium/high/critical), and a human-readable summary field. Read-only.",
       inputSchema: {
         type: "object",
         required: ["wallet", "coin"],
         properties: {
           wallet: { type: "string", description: "Public wallet address, 0x..." },
-          coin: { type: "string", description: "Coin symbol, e.g. COIN or DEX_NAME:COIN" },
-          dex: { type: "string", description: "Optional dex name, e.g. DEX_NAME" }
+          coin: { type: "string", description: "Coin symbol, e.g. SPCX or xyz:SPCX" },
+          dex: { type: "string", description: "Optional dex name, e.g. xyz" }
         }
       }
     }
@@ -333,46 +333,113 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         timestamp: o.timestamp ?? null
       }));
 
+    const order_count = openOrders.length;
+    const has_open_orders = order_count > 0;
+
+    // Funding rate and annualized estimate (8-hour rate × 3 × 365)
+    const fundingRate = ctx ? num(ctx.funding) : null;
+    const funding_annualized_estimate = fundingRate !== null
+      ? Math.round(fundingRate * 1095 * 10000) / 100
+      : null;
+
     // Build position block and derived metrics
     let position: Record<string, unknown> | null = null;
     let liq_distance_dollars: number | null = null;
     let liq_distance_pct: number | null = null;
+    let liquidation_buffer_pct_from_current_price: number | null = null;
     let unrealized_pnl_pct: number | null = null;
-    let margin_return_pct: number | null = null;
+    let pnl_on_margin_pct: number | null = null;
+    let notional_value: number | null = null;
+
+    let positionSide: string | null = null;
+    let leverageValue: number | null = null;
+    let leverageType: string | null = null;
+    let unrealizedPnl: number | null = null;
 
     if (rawPos) {
       const size = parseFloat(rawPos.szi as string);
       const absSize = Math.abs(size);
-      const side = size > 0 ? "long" : "short";
+      positionSide = size > 0 ? "long" : "short";
       const entryPx = num(rawPos.entryPx);
       const liqPx = num(rawPos.liquidationPx);
-      const unrealizedPnl = num(rawPos.unrealizedPnl);
+      unrealizedPnl = num(rawPos.unrealizedPnl);
       const marginUsed = num(rawPos.marginUsed);
       const leverage = rawPos.leverage as Record<string, unknown> | undefined;
+      leverageValue = num(leverage?.value);
+      leverageType = (leverage?.type as string) ?? null;
 
       position = {
         coin: rawPos.coin,
-        side,
+        side: positionSide,
         size: absSize,
         entry_price: entryPx,
         liquidation_price: liqPx,
-        leverage: leverage?.value ?? null,
-        leverage_type: leverage?.type ?? null,
+        leverage: leverageValue,
+        leverage_type: leverageType,
         margin_used: marginUsed,
         unrealized_pnl: unrealizedPnl
       };
 
+      if (currentPx !== null) {
+        notional_value = Math.round(absSize * currentPx * 100) / 100;
+      }
+
       if (liqPx !== null && currentPx !== null) {
-        const dist = side === "long" ? currentPx - liqPx : liqPx - currentPx;
+        const dist = positionSide === "long" ? currentPx - liqPx : liqPx - currentPx;
         liq_distance_dollars = Math.round(dist * 100) / 100;
         liq_distance_pct = Math.round((dist / currentPx) * 10000) / 100;
+        liquidation_buffer_pct_from_current_price = liq_distance_pct;
       }
       if (unrealizedPnl !== null && entryPx !== null && absSize > 0) {
         unrealized_pnl_pct = Math.round((unrealizedPnl / (entryPx * absSize)) * 10000) / 100;
       }
       if (unrealizedPnl !== null && marginUsed !== null && marginUsed > 0) {
-        margin_return_pct = Math.round((unrealizedPnl / marginUsed) * 10000) / 100;
+        pnl_on_margin_pct = Math.round((unrealizedPnl / marginUsed) * 10000) / 100;
       }
+    }
+
+    // Risk flags
+    const risk_flags: string[] = [];
+    if (liq_distance_pct !== null && liq_distance_pct < 10) risk_flags.push("near_liquidation");
+    if (leverageValue !== null && leverageValue > 10) risk_flags.push("high_leverage");
+    if (unrealizedPnl !== null && unrealizedPnl < 0) risk_flags.push("negative_pnl");
+    if (unrealizedPnl !== null && unrealizedPnl > 0) risk_flags.push("positive_pnl");
+    // positive funding = longs pay shorts; negative funding = shorts pay longs
+    if (fundingRate !== null && positionSide !== null) {
+      const paying = (positionSide === "long" && fundingRate > 0) || (positionSide === "short" && fundingRate < 0);
+      if (paying) risk_flags.push("funding_cost");
+    }
+    if (!has_open_orders) risk_flags.push("no_open_orders");
+    if (leverageType === "isolated") risk_flags.push("isolated_margin");
+    if (leverageType === "cross") risk_flags.push("cross_margin");
+
+    // Risk level: driven primarily by liquidation proximity, secondarily by leverage
+    let risk_level = "low";
+    if (liq_distance_pct !== null && liq_distance_pct < 5) {
+      risk_level = "critical";
+    } else if ((liq_distance_pct !== null && liq_distance_pct < 10) || (leverageValue !== null && leverageValue > 20)) {
+      risk_level = "high";
+    } else if ((liq_distance_pct !== null && liq_distance_pct < 20) || (leverageValue !== null && leverageValue > 10)) {
+      risk_level = "medium";
+    }
+
+    // Human-readable summary
+    let summary: string;
+    if (!position) {
+      summary = `No open ${key} position found for this wallet.`;
+    } else {
+      const liqStr = liq_distance_pct !== null
+        ? ` Liq buffer: ${liq_distance_pct}% ($${liq_distance_dollars}).`
+        : "";
+      const pnlStr = unrealized_pnl_pct !== null
+        ? ` PnL: ${unrealized_pnl_pct}% on position${pnl_on_margin_pct !== null ? `, ${pnl_on_margin_pct}% on margin` : ""}.`
+        : "";
+      const fundStr = funding_annualized_estimate !== null
+        ? ` Funding ~${funding_annualized_estimate}%/yr.`
+        : "";
+      const orderStr = has_open_orders ? ` ${order_count} open order(s).` : " No open orders.";
+      const flagStr = risk_flags.length > 0 ? ` Flags: ${risk_flags.join(", ")}.` : "";
+      summary = `${positionSide?.toUpperCase()} ${key} x${leverageValue ?? "?"} [${risk_level.toUpperCase()}].${liqStr}${pnlStr}${fundStr}${orderStr}${flagStr}`;
     }
 
     return {
@@ -391,14 +458,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             premium: ctx?.premium !== undefined ? num(ctx.premium) : null,
             impact_prices: ctx?.impactPxs ?? null
           },
-          funding: ctx ? num(ctx.funding) : null,
+          funding: fundingRate,
+          funding_annualized_estimate,
           open_interest: ctx ? num(ctx.openInterest) : null,
           volume_24h: ctx ? num(ctx.dayNtlVlm) : null,
+          notional_value,
           open_orders: openOrders,
+          order_count,
+          has_open_orders,
           liq_distance_dollars,
           liq_distance_pct,
+          liquidation_buffer_pct_from_current_price,
           unrealized_pnl_pct,
-          margin_return_pct
+          pnl_on_margin_pct,
+          risk_flags,
+          risk_level,
+          summary
         }, null, 2)
       }]
     };

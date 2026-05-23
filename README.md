@@ -1,6 +1,8 @@
-# Hyperliquid Readonly MCP
+# Hyperliquid MCP
 
-Hyperliquid Readonly MCP is a Read-only by design Model Context Protocol (MCP) server for Hyperliquid perpetual markets.
+Read-only by design.
+
+Hyperliquid MCP is a Model Context Protocol (MCP) server for Hyperliquid perpetual market analysis.
 
 It allows Claude and other MCP-compatible AI clients to inspect:
 
@@ -14,9 +16,26 @@ It allows Claude and other MCP-compatible AI clients to inspect:
 - market context
 - volatility conditions
 
-This project is designed for research, monitoring, discretionary trading workflows, and AI-assisted market analysis.
+This project is designed for:
+
+- research
+- monitoring
+- discretionary trading workflows
+- AI-assisted market analysis
 
 It is not a trading bot.
+
+---
+
+## Features
+
+- Real-time perpetual market analysis
+- Public wallet risk inspection
+- Funding and open interest monitoring
+- Liquidation distance analysis
+- Risk-level classification
+- Claude Code MCP integration
+- Read-only architecture
 
 ---
 
@@ -48,7 +67,7 @@ Only public wallet addresses are used.
 
 ---
 
-## Features
+## Features Overview
 
 | Feature | Description |
 |---|---|
@@ -58,38 +77,38 @@ Only public wallet addresses are used.
 | `hl_get_asset_context` | Funding, OI, premium, volume, impact prices |
 | `hl_get_position_summary` | Read public wallet perpetual positions |
 | `hl_get_open_orders` | Read public open orders |
-| `hl_analyze_position_context` | Combined risk and market snapshot |
+| `hl_analyze_position_context` | Full position risk snapshot with leverage, liquidation buffer, annualized funding, risk flags, and summary |
 
 ---
 
 ## Quick Start
 
-Clone the repository:
+### Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/hyperliquid-readonly-mcp.git
+git clone https://github.com/iamgt90/hyperliquid-readonly-mcp.git
 cd hyperliquid-readonly-mcp
 ```
 
-Install dependencies:
+### Install Dependencies
 
 ```bash
 npm install
 ```
 
-Build the project:
+### Build the Project
 
 ```bash
 npm run build
 ```
 
-Register the MCP server:
+### Register the MCP Server
 
 ```bash
 claude mcp add hyperliquid-readonly -- node /Users/YOUR_MAC_USERNAME/hyperliquid-readonly-mcp/dist/server.js
 ```
 
-Verify registration:
+### Verify Registration
 
 ```bash
 claude mcp list
@@ -114,7 +133,7 @@ Use hl_health_check
 Paste this into Claude Code:
 
 ```text
-Set up Hyperliquid Readonly MCP for me.
+Set up Hyperliquid MCP for me.
 
 Clone the repository.
 
@@ -150,13 +169,13 @@ Never enter:
 - seed phrases
 - API private keys
 
-### Read wallet positions
+### Read Wallet Positions
 
 ```text
 Use hl_get_position_summary with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS.
 ```
 
-### Read open orders
+### Read Open Orders
 
 ```text
 Use hl_get_open_orders with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS.
@@ -166,19 +185,19 @@ Use hl_get_open_orders with wallet address 0xYOUR_PUBLIC_WALLET_ADDRESS.
 
 ## Market Usage
 
-### Read market price
+### Read Market Price
 
 ```text
 Use hl_get_market_price with coin BTC.
 ```
 
-### Read funding and market context
+### Read Funding and Market Context
 
 ```text
 Use hl_get_asset_context with coin BTC.
 ```
 
-### Search markets
+### Search Markets
 
 ```text
 Use hl_search_markets with query BTC.
@@ -254,21 +273,20 @@ Focus on:
 
 ---
 
-## Example Output
+## Example Risk Fields
 
-```text
-BTC | POSITION: Long | LEVERAGE: 5x isolated
-
-Mark price: 000.00
-Entry price: 000.00
-Liquidation price: 000.00
-Unrealized PnL: +0.00
-Funding: mildly positive
-Open interest: expanding
-24h volume: moderate
-
-Risk summary:
-The position remains exposed to short-term volatility spikes.
+```json
+{
+  "risk_level": "medium",
+  "liq_distance_pct": 14.2,
+  "pnl_on_margin_pct": 22.4,
+  "funding_annualized_estimate": 18.6,
+  "risk_flags": [
+    "high_leverage",
+    "positive_pnl",
+    "funding_cost"
+  ]
+}
 ```
 
 ---
@@ -330,8 +348,6 @@ This project intentionally excludes:
 - private key handling
 - automated execution
 
-If execution tooling is ever added, it should exist in a separate repository with separate permissions and review processes.
-
 ---
 
 ## Troubleshooting
@@ -344,6 +360,17 @@ If execution tooling is ever added, it should exist in a separate repository wit
 | Wallet shows empty positions | Wallet may not have active positions |
 | Claude cannot call tools | Restart Claude Code |
 | DEX market missing | Use the `dex` parameter |
+
+---
+
+## Security
+
+This repository uses:
+
+- GitHub secret scanning
+- Push protection
+- Dependabot alerts
+- Dependabot security updates
 
 ---
 
