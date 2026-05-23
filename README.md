@@ -2,6 +2,22 @@
 
 Read-only by design.
 
+## Screenshots
+
+### Health Check
+
+![Health Check](docs/images/health-check.png)
+
+### BTC Asset Context
+
+![BTC Asset Context](docs/images/asset-context-btc.png)
+
+### Position Risk Analysis Example
+
+![Position Risk Analysis Example](docs/images/risk-analysis-example.png)
+
+---
+
 Hyperliquid MCP is a Model Context Protocol (MCP) server for Hyperliquid perpetual market analysis.
 
 It allows Claude and other MCP-compatible AI clients to inspect:
