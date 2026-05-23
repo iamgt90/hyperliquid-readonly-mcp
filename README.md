@@ -16,7 +16,12 @@ It allows Claude and other MCP-compatible AI clients to inspect:
 - market context
 - volatility conditions
 
-This project is designed for research, monitoring, discretionary trading workflows, and AI-assisted market analysis.
+This project is designed for:
+
+- research
+- monitoring
+- discretionary trading workflows
+- AI-assisted market analysis
 
 It is not a trading bot.
 
@@ -268,25 +273,6 @@ Focus on:
 
 ---
 
-## Example Output
-
-```text
-BTC | POSITION: Long | LEVERAGE: 5x isolated
-
-Mark price: 000.00
-Entry price: 000.00
-Liquidation price: 000.00
-Unrealized PnL: +0.00
-Funding: mildly positive
-Open interest: expanding
-24h volume: moderate
-
-Risk summary:
-The position remains exposed to short-term volatility spikes.
-```
-
----
-
 ## Example Risk Fields
 
 ```json
@@ -331,49 +317,6 @@ The position remains exposed to short-term volatility spikes.
 
 ---
 
-## hl_analyze_position_context
-
-This tool aggregates:
-
-- position data
-- leverage
-- liquidation distance
-- unrealized PnL
-- annualized funding
-- open orders
-- market context
-- risk classification
-
-into a single AI-friendly response.
-
-### Returned Risk Fields
-
-| Field | Description |
-|---|---|
-| `risk_level` | low / medium / high / critical |
-| `liquidation_buffer_pct_from_current_price` | Distance from liquidation |
-| `pnl_on_margin_pct` | Unrealized PnL relative to margin |
-| `notional_value` | Position notional value |
-| `funding_annualized_estimate` | Annualized funding estimate |
-| `order_count` | Open order count |
-| `has_open_orders` | Whether open orders exist |
-| `risk_flags` | Machine-readable risk indicators |
-| `summary` | Human-readable risk summary |
-
-### Example Risk Flags
-
-```json
-[
-  "near_liquidation",
-  "high_leverage",
-  "negative_pnl",
-  "funding_cost",
-  "isolated_margin"
-]
-```
-
----
-
 ## Architecture
 
 ```text
@@ -405,8 +348,6 @@ This project intentionally excludes:
 - private key handling
 - automated execution
 
-If execution tooling is ever added, it should exist in a separate repository with separate permissions and review processes.
-
 ---
 
 ## Troubleshooting
@@ -430,8 +371,6 @@ This repository uses:
 - Push protection
 - Dependabot alerts
 - Dependabot security updates
-
-to reduce accidental exposure of secrets and vulnerable dependencies.
 
 ---
 
