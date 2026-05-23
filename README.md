@@ -2,6 +2,8 @@
 
 Read-only by design.
 
+![Hyperliquid MCP Demo](docs/demo/hyperliquid-mcp-demo.gif)
+
 ## Example: Health Check
 
 ![Health Check](docs/images/health-check.png)
